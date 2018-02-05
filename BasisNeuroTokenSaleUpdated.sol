@@ -98,7 +98,7 @@ contract BasisNeuroTokenSale  is Ownable, usingOraclize {
         transferAllowed = false;
         refundToken=false;
 
-        startTime = now;//1515628800; // 11.01.2018 00:00
+        startTime = 1515628800; // 11.01.2018 00:00
         period = 20 * 1 days; //CHANGE first number
         endTime =  startTime + period;
         teamTokenUseDate = endTime + 365 * 1 days; //teamTokenUseDate is 1 year after  ICO end
@@ -107,6 +107,7 @@ contract BasisNeuroTokenSale  is Ownable, usingOraclize {
 
         totalSupply = 10000000000 * 1 ether;
         balances[owner] = totalSupply;
+        updatePrice();
     }
 
     /**
@@ -360,18 +361,20 @@ contract BasisNeuroTokenSale  is Ownable, usingOraclize {
     function () payable {
         require ( (now > startTime) && (now < endTime) );
         
+        updatePrice();
+        
         uint256 weiAmount = msg.value;
       
         // calculate token amount to be created
-        uint256 tokens = weiAmount.mul(dollarCost).div(rate).div(100);
+        uint256 tokens = weiAmount.mul(dollarCost).mul(100).div(rate);
 
         // update state
         weiRaised += weiAmount;
 
         // send tokens to beneficiary
-        dapsBonusCalcInter(msg.sender , tokens/*.mul(10 ** decimals)*/);
+        dapsBonusCalcInter(msg.sender , tokens);
 
-        ownerWallet.transfer(msg.value);
+        ownerWallet.transfer(this.balance);
         TokenPurchase(msg.sender, weiAmount, tokens);
     }
     
